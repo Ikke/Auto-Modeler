@@ -7,7 +7,7 @@
 * @copyright      (c) 2010 Jeremy Bush
 * @license        http://www.opensource.org/licenses/isc-license.txt
 */
-class AutoModeler extends Model implements ArrayAccess
+class AutoModeler extends Model implements ArrayAccess, Iterator
 {
 	// The database table name
 	protected $_table_name = '';
@@ -98,6 +98,18 @@ class AutoModeler extends Model implements ArrayAccess
 	}
 
 	/**
+	 * Magic isset method to test _data
+	 *
+	 * @param string $name the property to test
+	 *
+	 * @return bool
+	 */
+	public function __isset($name)
+	{
+		return isset($this->_data[$name]);
+	}
+
+	/**
 	 * Gets an array version of the model
 	 *
 	 * @return array
@@ -155,7 +167,7 @@ class AutoModeler extends Model implements ArrayAccess
 	 *
 	 * @return mixed
 	 */
-	public function valid($validation = NULL)
+	public function is_valid($validation = NULL)
 	{
 		$data = $validation instanceof Validate ? $validation->copy($validation->as_array()+$this->_data) : Validate::factory($this->_data);
 
@@ -320,6 +332,32 @@ class AutoModeler extends Model implements ArrayAccess
 	public function offsetUnset($key)
 	{
 		$this->_data[$key] = NULL;
+	}
+
+	// Iterable interface
+	function rewind()
+	{
+		return reset($this->_data);
+	}
+
+	function current()
+	{
+		return current($this->_data);
+	}
+
+	function key()
+	{
+		return key($this->_data);
+	}
+
+	function next()
+	{
+		return next($this->_data);
+	}
+
+	function valid()
+	{
+		return key($this->_data) !== null;
 	}
 }
 
