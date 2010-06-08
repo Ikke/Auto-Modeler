@@ -200,7 +200,10 @@ class AutoModeler extends Model implements ArrayAccess
 			}
 			else // Do an insert
 			{
-				$id = db::insert($this->_table_name)->values($this->_data)->execute($this->_db);
+				$columns = array_keys($this->_data);
+				$id = db::insert($this->_table_name)
+						->columns($columns)
+						->values($this->_data)->execute($this->_db);
 				return ($this->_data['id'] = $id[0]);
 			}
 		}
