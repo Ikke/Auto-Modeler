@@ -9,6 +9,8 @@
 */
 class AutoModeler extends Model implements ArrayAccess, Iterator
 {
+	const VERSION = 3.2;
+
 	// The database table name
 	protected $_table_name = '';
 
@@ -58,7 +60,10 @@ class AutoModeler extends Model implements ArrayAccess, Iterator
 	 */
 	public function __get($key)
 	{
-		return isset($this->_data[$key]) ? $this->_data[$key] : NULL;
+		if (array_key_exists($key, $this->_data))
+		 	return $this->_data[$key];
+
+		throw new AutoModeler_Exception('Field '.$key.' does not exist in '.get_class($this).'!', array(), '');
 	}
 
 	/**
@@ -74,7 +79,10 @@ class AutoModeler extends Model implements ArrayAccess, Iterator
 		{
 			$this->_data[$key] = $value;
 			$this->_validated = FALSE;
+			return;
 		}
+
+		throw new AutoModeler_Exception('Field '.$key.' does not exist in '.get_class($this).'!', array(), '');
 	}
 
 	/**
@@ -85,7 +93,7 @@ class AutoModeler extends Model implements ArrayAccess, Iterator
 	public function __sleep()
 	{
 		// Store only information about the object without db property
-		return array_diff(array_keys(get_object_vars($this)), array('db'));
+		return array_diff(array_keys(get_object_vars($this)), array('_db'));
 	}
 
 	/**
@@ -127,7 +135,7 @@ class AutoModeler extends Model implements ArrayAccess, Iterator
 	 *
 	 * @return Object
 	 */
-	public static function factory($model = null, $id = FALSE)
+	public static function factory($model = NULL, $id = NULL)
 	{
 		$model = empty($model) ? __CLASS__ : 'Model_'.ucfirst($model);
 		return new $model($id);
@@ -141,10 +149,9 @@ class AutoModeler extends Model implements ArrayAccess, Iterator
 	 */
 	public function set_fields(array $data)
 	{
-		foreach ($data as $key => $value)
+		foreach (array_intersect_key($data, $this->_data) as $key => $value)
 		{
-			if (array_key_exists($key, $this->_data))
-				$this->$key = $value;
+			$this->$key = $value;
 		}
 	}
 
@@ -202,7 +209,7 @@ class AutoModeler extends Model implements ArrayAccess, Iterator
 	 */
 	public function save($validation = NULL)
 	{
-		$status = $this->_validated ? TRUE : $this->valid($validation);
+		$status = $this->_validated ? TRUE : $this->is_valid($validation);
 
 		if ($status === TRUE)
 		{
@@ -226,14 +233,16 @@ class AutoModeler extends Model implements ArrayAccess, Iterator
 	/**
 	 * Deletes the current object from the database
 	 *
-	 * @return array
+	 * @return integer
 	 */
 	public function delete()
 	{
 		if ($this->_data['id'])
 		{
-			return db::delete($this->_table_name)->where('id','=',$this->_data['id'])->execute($this->_db);
+			return db::delete($this->_table_name)->where('id', '=', $this->_data['id'])->execute($this->_db);
 		}
+
+		throw new AutoModeler_Exception('Cannot delete a non-saved model '.get_class($this).'!', array(), array());
 	}
 
 	/**
@@ -262,10 +271,7 @@ class AutoModeler extends Model implements ArrayAccess, Iterator
 	public function fetch_where($wheres = array(), $order_by = 'id', $direction = 'ASC', $type = 'and')
 	{
 		$function = $type.'_where';
-		$query = db::select('*')
-				->from($this->_table_name)
-				->order_by($order_by, $direction)
-				->as_object('Model_'.inflector::singular(ucwords($this->_table_name)));
+		$query = db::select('*')->from($this->_table_name)->order_by($order_by, $direction)->as_object('Model_'.inflector::singular(ucwords($this->_table_name)));
 
 		foreach ($wheres as $where)
 			$query->$function($where[0], $where[1], $where[2]);
@@ -307,18 +313,6 @@ class AutoModeler extends Model implements ArrayAccess, Iterator
 		return $rows;
 	}
 
-	/**
-	 * Tests to see if an attribute exists in the model
-	 *
-	 * @param array  $key       the key to check
-	 *
-	 * @return Database_Result
-	 */
-	public function has_attribute($key)
-	{
-		return array_key_exists($key, $this->_data);
-	}
-
 	// Array Access Interface
 	public function offsetExists($key)
 	{
@@ -332,7 +326,7 @@ class AutoModeler extends Model implements ArrayAccess, Iterator
 
 	public function offsetGet($key)
 	{
-		return $this->__get($key);
+		return $this->$key;
 	}
 
 	public function offsetUnset($key)
@@ -341,27 +335,27 @@ class AutoModeler extends Model implements ArrayAccess, Iterator
 	}
 
 	// Iterable interface
-	function rewind()
+	public function rewind()
 	{
 		return reset($this->_data);
 	}
 
-	function current()
+	public function current()
 	{
 		return current($this->_data);
 	}
 
-	function key()
+	public function key()
 	{
 		return key($this->_data);
 	}
 
-	function next()
+	public function next()
 	{
 		return next($this->_data);
 	}
 
-	function valid()
+	public function valid()
 	{
 		return key($this->_data) !== null;
 	}
