@@ -58,7 +58,7 @@ class AutoModeler_Core extends Model_Database implements ArrayAccess
 
 		if ($id !== NULL)
 		{
-			$this->load(db::select_array($this->fields())->where($this->_table_name.'.id', '=', $id));
+			$this->load(DB::select_array($this->fields())->where($this->_table_name.'.id', '=', $id));
 		}
 		elseif ($this->id) // We loaded this via mysql_result_object
 		{
@@ -73,10 +73,10 @@ class AutoModeler_Core extends Model_Database implements ArrayAccess
 	 * 
 	 * 	$user = new Model_User;
 	 * 	// Load a specific row
-	 * 	$user->load(db::select_array($user->fields())->where('id', '=', '1'));
+	 * 	$user->load(DB::select_array($user->fields())->where('id', '=', '1'));
 	 * 
 	 * 	// Load many rows with where
-	 * 	$result = Model::factory('user')->load(db::select_array($user->fields())->where('id', '>', '3'), NULL);
+	 * 	$result = Model::factory('user')->load(DB::select_array($user->fields())->where('id', '>', '3'), NULL);
 	 * 
 	 * 	// Load all rows
 	 * 	$result = Model::factory('user')->load(NULL, NULL);
@@ -98,7 +98,7 @@ class AutoModeler_Core extends Model_Database implements ArrayAccess
 		// Use a normal select query by default
 		if ($query == NULL)
 		{
-			$query = db::select_array(array_keys($this->_data));
+			$query = DB::select_array(array_keys($this->_data));
 		}
 
 		// Add limit if passed
@@ -395,12 +395,12 @@ class AutoModeler_Core extends Model_Database implements ArrayAccess
 		{
 			if ($this->state() == AutoModeler::STATE_LOADED) // Do an update
 			{
-				return count(db::update($this->_table_name)->set(array_diff_assoc($this->_data, array('id' => $this->_data['id'])))->where('id', '=', $this->_data['id'])->execute($this->_db));
+				return count(DB::update($this->_table_name)->set(array_diff_assoc($this->_data, array('id' => $this->_data['id'])))->where('id', '=', $this->_data['id'])->execute($this->_db));
 			}
 			else // Do an insert
 			{
 				$columns = array_keys($this->_data);
-				$id = db::insert($this->_table_name)
+				$id = DB::insert($this->_table_name)
 						->columns($columns)
 						->values($this->_data)->execute($this->_db);
 
@@ -425,7 +425,7 @@ class AutoModeler_Core extends Model_Database implements ArrayAccess
 		{
 			$this->_state = AutoModeler::STATE_DELETED;
 
-			return db::delete($this->_table_name)->where('id', '=', $this->_data['id'])->execute($this->_db);
+			return DB::delete($this->_table_name)->where('id', '=', $this->_data['id'])->execute($this->_db);
 		}
 
 		throw new AutoModeler_Exception('Cannot delete a non-loaded model '.get_class($this).'!', array(), array());
@@ -440,7 +440,7 @@ class AutoModeler_Core extends Model_Database implements ArrayAccess
 	{
 		if ($this->loaded())
 		{
-			return $this->load(db::select_array($this->fields())->where('id', '=', $this->_data['id']));
+			return $this->load(DB::select_array($this->fields())->where('id', '=', $this->_data['id']));
 		}
 
 		throw new AutoModeler_Exception('Cannot reload a non-loaded model '.get_class($this).'.', array(), array());
@@ -480,7 +480,7 @@ class AutoModeler_Core extends Model_Database implements ArrayAccess
 		}
 		else // Fetch all rows
 		{
-			$query = $this->load(db::select_array($select_array), NULL);
+			$query = $this->load(DB::select_array($select_array), NULL);
 		}
 
 		foreach ($query as $row)
@@ -503,7 +503,7 @@ class AutoModeler_Core extends Model_Database implements ArrayAccess
 
 	/**
 	 * Returns an array of the columns in this object.
-	 * Useful for db::select_array().
+	 * Useful for DB::select_array().
 	 *
 	 * @return array
 	 */

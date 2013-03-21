@@ -62,10 +62,10 @@ class AutoModeler_ORM_Core extends AutoModeler
 			$f_key = inflector::singular($related_table).'_id';
 
 			// See if this is already in the join table
-			if ( ! count(db::select('*')->from($this->_table_name.'_'.$related_table)->where($f_key, '=', $value)->where($this_key, '=', $this->_data['id'])->execute($this->_db)))
+			if ( ! count(DB::select('*')->from($this->_table_name.'_'.$related_table)->where($f_key, '=', $value)->where($this_key, '=', $this->_data['id'])->execute($this->_db)))
 			{
 				// Insert
-				db::insert($this->_table_name.'_'.$related_table)->columns(array($f_key, $this_key))->values(array($value, $this->_data['id']))->execute($this->_db);
+				DB::insert($this->_table_name.'_'.$related_table)->columns(array($f_key, $this_key))->values(array($value, $this->_data['id']))->execute($this->_db);
 			}
 		}
 		else if (in_array($key, $this->_belongs_to))
@@ -74,10 +74,10 @@ class AutoModeler_ORM_Core extends AutoModeler
 			$this_key = inflector::singular($this->_table_name).'_id';
 			$f_key = inflector::singular($related_table).'_id';
 			// See if this is already in the join table
-			if ( ! count(db::select('*')->from($related_table.'_'.$this->_table_name)->where($f_key, '=', $value)->where($this_key, '=', $this->_data['id'])->execute($this->_db)))
+			if ( ! count(DB::select('*')->from($related_table.'_'.$this->_table_name)->where($f_key, '=', $value)->where($this_key, '=', $this->_data['id'])->execute($this->_db)))
 			{
 				// Insert
-				db::insert($related_table.'_'.$this->_table_name)->columns(array($f_key, $this_key))->values(array($value, $this->_data['id']))->execute($this->_db);
+				DB::insert($related_table.'_'.$this->_table_name)->columns(array($f_key, $this_key))->values(array($value, $this->_data['id']))->execute($this->_db);
 			}
 		}
 		elseif (strpos($key, ':')) // Process with
@@ -149,7 +149,7 @@ class AutoModeler_ORM_Core extends AutoModeler
 	{
 		if ($query == NULL)
 		{
-			$query = db::select_array(array_keys($this->_data));
+			$query = DB::select_array(array_keys($this->_data));
 		}
 
 		if ($this->_load_with !== NULL)
@@ -201,10 +201,10 @@ class AutoModeler_ORM_Core extends AutoModeler
 			$f_key = inflector::singular($related_table).'_id';
 			foreach ($values as $value)
 				// See if this is already in the join table
-				if ( ! count(db::select('*')->from($this->_table_name.'_'.$related_table)->where($f_key, '=', $value)->where($this_key, '=', $this->_data['id'])->execute($this->_db)))
+				if ( ! count(DB::select('*')->from($this->_table_name.'_'.$related_table)->where($f_key, '=', $value)->where($this_key, '=', $this->_data['id'])->execute($this->_db)))
 				{
 					// Insert
-					db::insert($this->_table_name.'_'.$related_table)->columns(array($f_key, $this_key))->values(array($value, $this->_data['id']))->execute($this->_db);
+					DB::insert($this->_table_name.'_'.$related_table)->columns(array($f_key, $this_key))->values(array($value, $this->_data['id']))->execute($this->_db);
 				}
 		}
 	}
@@ -227,7 +227,7 @@ class AutoModeler_ORM_Core extends AutoModeler
 		$temp = new $model();
 		if ( ! $query)
 		{
-			$query = db::select_array($temp->fields());
+			$query = DB::select_array($temp->fields());
 		}
 
 		if ($temp->field_exists(inflector::singular($this->_table_name).'_id')) // Look for a one to many relationship
@@ -271,7 +271,7 @@ class AutoModeler_ORM_Core extends AutoModeler
 
 		if ( ! $query)
 		{
-			$query = db::select_array($parent->fields());
+			$query = DB::select_array($parent->fields());
 		}
 
 		if ($this->field_exists($key.'_id')) // Look for a one to many relationship
@@ -321,7 +321,7 @@ class AutoModeler_ORM_Core extends AutoModeler
 
 		if (in_array($key, $this->_has_many))
 		{
-			return (bool) db::select($related_table.'.id')->
+			return (bool) DB::select($related_table.'.id')->
 			                  from(AutoModeler::factory(inflector::singular($key))->get_table_name())->
 			                  where($join_table.'.'.$this_key, '=', $this->_data['id'])->
 			                  where($join_table.'.'.$f_key, '=', $value)->
@@ -348,7 +348,7 @@ class AutoModeler_ORM_Core extends AutoModeler
 	{
 		$related = AutoModeler::factory(inflector::singular($key));
 		
-		return db::delete($this->_table_name.'_'.$related->get_table_name())->where(inflector::singular($related->get_table_name()).'_id', '=', $id)->where(inflector::singular($this->_table_name).'_id', '=', $this->_data['id'])->execute($this->_db);
+		return DB::delete($this->_table_name.'_'.$related->get_table_name())->where(inflector::singular($related->get_table_name()).'_id', '=', $id)->where(inflector::singular($this->_table_name).'_id', '=', $this->_data['id'])->execute($this->_db);
 	}
 
 	/**
@@ -365,11 +365,11 @@ class AutoModeler_ORM_Core extends AutoModeler
 	{
 		if (in_array($key, $this->_has_many))
 		{
-			return db::delete($this->_table_name.'_'.AutoModeler::factory(inflector::singular($key))->get_table_name())->where(inflector::singular($this->_table_name).'_id', '=', $this->id)->execute($this->_db);
+			return DB::delete($this->_table_name.'_'.AutoModeler::factory(inflector::singular($key))->get_table_name())->where(inflector::singular($this->_table_name).'_id', '=', $this->id)->execute($this->_db);
 		}
 		else if (in_array($key, $this->_belongs_to))
 		{
-			return db::delete(AutoModeler::factory(inflector::singular($key))->get_table_name().'_'.$this->_table_name)->where(inflector::singular($this->_table_name).'_id', '=', $this->id)->execute($this->_db);
+			return DB::delete(AutoModeler::factory(inflector::singular($key))->get_table_name().'_'.$this->_table_name)->where(inflector::singular($this->_table_name).'_id', '=', $this->id)->execute($this->_db);
 		}
 	}
 
@@ -382,6 +382,6 @@ class AutoModeler_ORM_Core extends AutoModeler
 	 */
 	public function remove_parent($key)
 	{
-		return db::delete(AutoModeler::factory(inflector::singular($key))->get_table_name().'_'.$this->_table_name)->where(inflector::singular($this->_table_name).'_id', '=', $this->id)->execute($this->_db);
+		return DB::delete(AutoModeler::factory(inflector::singular($key))->get_table_name().'_'.$this->_table_name)->where(inflector::singular($this->_table_name).'_id', '=', $this->id)->execute($this->_db);
 	}
 }

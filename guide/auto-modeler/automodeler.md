@@ -61,11 +61,11 @@ Note that if you use set_fields() from $_POST, make sure you filter the keys. Yo
 
 ## Loading an arbitrary row
 
-	$foo = Model::factory('foo')->load(db::select()->where('bar', '=', 'foobar'));
+	$foo = Model::factory('foo')->load(DB::select()->where('bar', '=', 'foobar'));
 
 ## Get many results back
 
-	$foos = Model::factory('foo')->load(db::select()->where('bar', 'IN', array(1,2,3,4)), NULL);
+	$foos = Model::factory('foo')->load(DB::select()->where('bar', 'IN', array(1,2,3,4)), NULL);
 
 ## ArrayAccess
 

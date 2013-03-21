@@ -66,7 +66,7 @@ This is all the setup!
 AutoModeler_ORM comes with robust support for load()ing relationships with() the main model. This works with one to many relationships (you need a model_id column in your table). Suppose you have a Model_User with a `foobar` relationship:
 
 	$user = new Model_User();
-	$user->with('foobar')->load(db::select()->where('users.id', '=', 1));
+	$user->with('foobar')->load(DB::select()->where('users.id', '=', 1));
 
 Now when you call `$user->foobar`, it will not run an additional query. You must use with() alongside of load().
 
